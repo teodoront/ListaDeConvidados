@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.convidados.R;
 import com.example.convidados.model.GuestModel;
+import com.example.convidados.view.listener.OnListClick;
 import com.example.convidados.view.viewholder.GuestViewHolder;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
 public class GuestAdapter extends RecyclerView.Adapter<GuestViewHolder> {
 
     private List<GuestModel> mList = new ArrayList<>();
+    private OnListClick mListener;
 
 
     @NonNull
@@ -32,7 +34,7 @@ public class GuestAdapter extends RecyclerView.Adapter<GuestViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull GuestViewHolder holder, int position) {
         //pega a linha criada a atribui valores
-        holder.bind(this.mList.get(position));
+        holder.bind(this.mList.get(position), this.mListener);
 
     }
 
@@ -45,6 +47,9 @@ public class GuestAdapter extends RecyclerView.Adapter<GuestViewHolder> {
     public void attachList(List<GuestModel> list) {
         this.mList = list;
         notifyDataSetChanged();
+    }
 
+    public void attachListener(OnListClick listener) {
+        this.mListener = listener;
     }
 }

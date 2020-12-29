@@ -1,9 +1,11 @@
 package com.example.convidados.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -13,8 +15,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.convidados.R;
+import com.example.convidados.constants.GuestsConstants;
+import com.example.convidados.model.Feedback;
 import com.example.convidados.model.GuestModel;
 import com.example.convidados.view.adapter.GuestAdapter;
+import com.example.convidados.view.listener.OnListClick;
 import com.example.convidados.viewmodel.AllGuestViewModel;
 
 import java.util.List;
@@ -24,6 +29,7 @@ public class AllGuestFragment extends Fragment {
     private AllGuestViewModel mViewModel;
     private ViewHolder mViewHolder = new ViewHolder();
     private GuestAdapter mAdapter = new GuestAdapter();
+    private int mFilter = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -34,6 +40,30 @@ public class AllGuestFragment extends Fragment {
         this.mViewHolder.recyclerGuests.setLayoutManager(new LinearLayoutManager(getContext()));
         this.mViewHolder.recyclerGuests.setAdapter(this.mAdapter);
 
+        OnListClick listener = new OnListClick() {
+            @Override
+            public void onClick(int id) {
+                //Abrir a activity com dados para edição
+                Bundle bundle = new Bundle();
+                bundle.putInt(GuestsConstants.GUESTID, id);
+                Intent intent = new Intent(getContext(), GuestActivity.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onDelete(int id) {
+                mViewModel.delete(id);
+                mViewModel.getList(mFilter);
+            }
+        };
+        this.mAdapter.attachListener(listener);
+
+        //filtrar os usuários que serão listados na fragment
+        if (getArguments()!= null){
+            this.mFilter = getArguments().getInt(GuestsConstants.FILTER);
+        }
+
         this.observers();
         return root;
     }
@@ -41,7 +71,7 @@ public class AllGuestFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        this.mViewModel.getList();
+        this.mViewModel.getList(this.mFilter);
     }
 
     //Usando metodo que fica escutando alterações, observers.
@@ -50,6 +80,13 @@ public class AllGuestFragment extends Fragment {
             @Override
             public void onChanged(List<GuestModel> list) {
                 mAdapter.attachList(list);
+            }
+        });
+
+        this.mViewModel.feedback.observe(getViewLifecycleOwner(), new Observer<Feedback>() {
+            @Override
+            public void onChanged(Feedback feedback) {
+                Toast.makeText(getContext(), feedback.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
